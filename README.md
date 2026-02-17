@@ -1,1 +1,22 @@
-# mi-pagina-web
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Página Web</title>
+</head>
+
+<body>
+
+    <h1>Bienvenido a mi página web</h1>
+
+    <p>Esta es mi primera página creada con HTML.</p>
+
+    <h2>Sobre mí</h2>
+    <p>Estoy aprendiendo programación y diseño web.</p>
+
+    <button onclick="alert('Hola!')">
+        Haz clic
+    </button>
+
+</body>
+</html>
