@@ -1,22 +1,193 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Mi Página Web</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nike Store</title>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#f2f2f2;}
+header{
+background:black;color:white;padding:20px;
+display:flex;justify-content:space-between;
+align-items:center;
+}
+.carrito{
+background:white;color:black;padding:10px 15px;
+border-radius:20px;font-weight:bold;
+}
+.contenedor{
+display:flex;flex-wrap:wrap;gap:25px;
+justify-content:center;padding:40px;
+}
+.producto{
+background:white;width:260px;
+border-radius:15px;
+box-shadow:0 5px 15px rgba(0,0,0,.2);
+overflow:hidden;
+}
+.producto img{
+width:100%;height:220px;
+object-fit:cover;
+}
+.info{padding:15px;text-align:center;}
+select{
+width:100%;padding:8px;margin-bottom:10px;
+}
+button{
+width:100%;padding:10px;border:none;
+background:black;color:white;
+border-radius:8px;cursor:pointer;
+}
+button:hover{background:#222;}
+.whatsapp{
+position:fixed;bottom:20px;right:20px;
+background:#25D366;color:white;
+padding:15px 20px;border:none;
+border-radius:50px;font-size:16px;
+cursor:pointer;
+}
+</style>
 </head>
 
 <body>
 
-    <h1>Bienvenido a mi página web</h1>
+<header>
+<div>NIKE STORE</div>
+<div class="carrito">🛒 <span id="contador">0</span></div>
+</header>
 
-    <p>Esta es mi primera página creada con HTML.</p>
+<div class="contenedor">
 
-    <h2>Sobre mí</h2>
-    <p>Estoy aprendiendo programación y diseño web.</p>
+<!-- PRODUCTO 1 -->
+<div class="producto">
+<img src="img/Z1.jpeg">
+<div class="info">
+<h3>Nike Air Runner</h3>
+<p>$799 MXN</p>
+<select id="t1">
+<option value="">Selecciona talla</option>
+<option>25</option><option>26</option>
+<option>27</option><option>28</option>
+<option>29</option>
+</select>
+<button onclick="agregar('Nike Air Runner',799,'t1','img/Z1.jpg')">
+Agregar
+</button>
+</div>
+</div>
 
-    <button onclick="alert('Hola!')">
-        Haz clic
-    </button>
+<!-- PRODUCTO 2 -->
+<div class="producto">
+<img src="img/Z2.jpeg">
+<div class="info">
+<h3>Nike Street Pro</h3>
+<p>$899 MXN</p>
+<select id="t2">
+<option value="">Selecciona talla</option>
+<option>25</option><option>26</option>
+<option>27</option><option>28</option>
+<option>29</option>
+</select>
+<button onclick="agregar('Nike Street Pro',899,'t2','img/Z2.jpg')">
+Agregar
+</button>
+</div>
+</div>
+
+</div>
+
+<button class="whatsapp" onclick="procesarPedido()">
+Generar PDF y Enviar WhatsApp
+</button>
+
+<script>
+let carrito=[];
+let numeroWhatsApp="7531186614";
+
+function agregar(nombre,precio,idTalla,imagen){
+let talla=document.getElementById(idTalla).value;
+
+if(!talla){
+alert("Selecciona talla");
+return;
+}
+
+carrito.push({nombre,precio,talla,imagen});
+document.getElementById("contador").innerText=carrito.length;
+}
+
+async function procesarPedido(){
+
+if(carrito.length===0){
+alert("Carrito vacío");
+return;
+}
+
+const {jsPDF}=window.jspdf;
+const doc=new jsPDF();
+
+doc.setFontSize(18);
+doc.text("REPORTE DE PEDIDO - NIKE STORE",20,20);
+
+let y=40;
+let total=0;
+
+for(let item of carrito){
+
+doc.setFontSize(12);
+doc.text(`Producto: ${item.nombre}`,20,y); y+=7;
+doc.text(`Precio: $${item.precio} MXN`,20,y); y+=7;
+doc.text(`Talla: ${item.talla}`,20,y); y+=10;
+
+total+=item.precio;
+
+// Convertir imagen a base64
+let imgData=await convertirBase64(item.imagen);
+doc.addImage(imgData,'JPEG',20,y,50,40);
+y+=50;
+
+if(y>250){doc.addPage(); y=20;}
+}
+
+doc.setFontSize(14);
+doc.text(`TOTAL: $${total} MXN`,20,y+10);
+
+// Descargar PDF
+doc.save("Pedido_Nike.pdf");
+
+// Abrir WhatsApp
+let mensaje="Hola, ya generé mi pedido en PDF.%0A";
+mensaje+="Total: $"+total+" MXN";
+
+setTimeout(()=>{
+window.open(`https://wa.me/${numeroWhatsApp}?text=${mensaje}`,"_blank");
+},800);
+}
+
+function convertirBase64(url){
+return new Promise((resolve)=>{
+let img=new Image();
+img.crossOrigin="anonymous";
+img.onload=function(){
+let canvas=document.createElement("canvas");
+canvas.width=img.width;
+canvas.height=img.height;
+let ctx=canvas.getContext("2d");
+ctx.drawImage(img,0,0);
+resolve(canvas.toDataURL("image/jpeg"));
+};
+img.src=url;
+});
+}
+</script>
 
 </body>
 </html>
+
+
+
+
