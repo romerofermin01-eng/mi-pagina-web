@@ -164,8 +164,9 @@ return;
 }
 
 carrito.push({nombre,precio,img,talla});
-
 document.getElementById("contador").innerText=carrito.length;
+
+console.log("Carrito:", carrito);
 }
 
 // GENERAR PDF + WHATSAPP
@@ -194,9 +195,14 @@ doc.text(`Precio: $${item.precio} MXN`,20,y); y+=10;
 
 total+=item.precio;
 
-// imagen
+// INTENTAR CARGAR IMAGEN
+try{
 let imgData=await convertirBase64(item.img);
 doc.addImage(imgData,'JPEG',20,y,50,40);
+}catch(error){
+console.error("Error imagen:", item.img);
+doc.text("(Imagen no disponible)",20,y);
+}
 
 y+=50;
 
@@ -208,9 +214,10 @@ y=20;
 
 doc.text(`TOTAL: $${total} MXN`,20,y);
 
+// GUARDAR PDF
 doc.save("Pedido_Nike.pdf");
 
-// WHATSAPP
+// WHATSAPP (SIEMPRE SE EJECUTA)
 let mensaje="Hola, quiero realizar este pedido:%0A%0A";
 
 carrito.forEach((item,i)=>{
@@ -221,28 +228,40 @@ mensaje += `Precio: $${item.precio} MXN%0A%0A`;
 
 mensaje += `TOTAL: $${total} MXN`;
 
+console.log("Enviando a WhatsApp...");
+
 setTimeout(()=>{
-window.open(`https://wa.me/7531186614?text=${mensaje}`,"_blank");
-},800);
+window.open(`https://wa.me/5217531186614?text=${mensaje}`,"_blank");
+},500);
 
 }
 
-// CONVERTIR IMAGEN
+// CONVERTIR IMAGEN (MEJORADO)
 function convertirBase64(url){
-return new Promise((resolve)=>{
+return new Promise((resolve,reject)=>{
+
 let img=new Image();
 img.crossOrigin="anonymous";
 
 img.onload=function(){
+try{
 let canvas=document.createElement("canvas");
 canvas.width=img.width;
 canvas.height=img.height;
 let ctx=canvas.getContext("2d");
 ctx.drawImage(img,0,0);
 resolve(canvas.toDataURL("image/jpeg"));
+}catch(e){
+reject(e);
+}
+}
+
+img.onerror=function(){
+reject("No carga imagen");
 }
 
 img.src=url;
+
 });
 }
 
